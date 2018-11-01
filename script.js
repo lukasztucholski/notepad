@@ -33,7 +33,7 @@ function newNote() {
         noteID++;
         let date = actualDate();
         let newNoteFromConstructor = new NoteConstructor(noteTagsValue, noteContentValue, priority, noteID, date);
-        // clearForm();
+        clearForm();
         sectionNotes.insertBefore(newNoteFromConstructor, sectionNotes.firstChild);
         allOfNotes.push(newNoteFromConstructor);
         allOfPriority.push(newNoteFromConstructor.dataset.priority);
