@@ -37,7 +37,7 @@ function newNote() {
         allOfNotes.push(newNoteFromConstructor);
         allOfPriority.push(newNoteFromConstructor.dataset.priority);
         refreshStatistics();
-        // clearForm();
+        clearForm();
     }
 }
 
@@ -96,7 +96,7 @@ function NoteConstructor(tags, content, priority, noteID, date) {
 function clearForm() {
     addNoteTags.value = "";
     addNoteContent.value = ""
-    normalPriority.checked = true;
+    normalPriorityInput.checked = true;
 }
 
 function removeNote(e) {
