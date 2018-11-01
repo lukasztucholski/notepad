@@ -94,8 +94,8 @@ function NoteConstructor(tags, content, priority, noteID, date) {
 }
 
 function clearForm() {
-    addNoteTags.value = "";
-    addNoteContent.value = ""
+    addNoteTags.value = "Tagi oddzielone spcją";
+    addNoteContent.value = "Treść notatki"
     normalPriorityInput.checked = true;
 }
 
