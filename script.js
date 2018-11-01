@@ -37,7 +37,7 @@ function newNote() {
         allOfNotes.push(newNoteFromConstructor);
         allOfPriority.push(newNoteFromConstructor.dataset.priority);
         refreshStatistics();
-        clearForm();
+        // clearForm();
     }
 }
 
