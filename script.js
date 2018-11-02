@@ -14,11 +14,38 @@ const numbOfNotes = document.querySelector(".sidebar__span--number-of-notes");
 const lowPriorityClass = "note--lowpriority";
 const highPriorityClass = "note--highpriority";
 const defaultPriorityClass = "note";
+const markAsDoneClass = "note--markasdone";
 
 let noteID = 0;
 let allOfNotes = [];
 let allOfTags = [];
 let allOfPriority = [];
+
+(function () {
+    let keys = Object.keys(localStorage);
+    console.log(keys.length);
+    for (i = 1; i <= keys.length; i++) {
+        loadFromStorage(i);
+    }
+    let LastID = localStorage.getItem("LastID");
+    noteID = LastID;
+    refreshStatistics();
+})();
+
+function loadFromStorage(nr) {
+    let content = localStorage.getItem(`${nr}note-content`);
+    let date = localStorage.getItem(`${nr}note-date`);
+    let priority = localStorage.getItem(`${nr}note-priority`);
+    let tags = localStorage.getItem(`${nr}note-tags`);
+    let notenumb = localStorage.getItem(`${nr}note-id`);
+
+    if (content && date && priority && tags && notenumb) {
+        let newNoteFromConstructor = new NoteConstructor(tags, content, priority, notenumb, date);
+        sectionNotes.insertBefore(newNoteFromConstructor, sectionNotes.firstChild);
+        allOfNotes.push(newNoteFromConstructor);
+        allOfPriority.push(newNoteFromConstructor.dataset.priority);
+    }
+}
 
 function newNote() {
     let noteTagsValue = addNoteTags.value;
@@ -36,6 +63,14 @@ function newNote() {
         sectionNotes.insertBefore(newNoteFromConstructor, sectionNotes.firstChild);
         allOfNotes.push(newNoteFromConstructor);
         allOfPriority.push(newNoteFromConstructor.dataset.priority);
+
+        localStorage.setItem(`${noteID}note-id`, noteID);
+        localStorage.setItem(`${noteID}note-date`, date);
+        localStorage.setItem(`${noteID}note-priority`, priority);
+        localStorage.setItem(`${noteID}note-tags`, noteTagsValue);
+        localStorage.setItem(`${noteID}note-content`, noteContentValue);
+        localStorage.setItem("LastID", noteID);
+
         refreshStatistics();
         clearForm();
     }
@@ -53,13 +88,17 @@ function getPriority(low, high) {
     return priority
 }
 
-function NoteConstructor(tags, content, priority, noteID, date) {
+function NoteConstructor(tags, content, priority, idOfNote, date) {
     let newNoteArticle = document.createElement("article");
-    newNoteArticle.setAttribute("id", `${noteID}`);
-    newNoteArticle.setAttribute("class", defaultPriorityClass);
+    newNoteArticle.setAttribute("id", `${idOfNote}`);
     newNoteArticle.setAttribute("data-priority", `${priority}`);
+    newNoteArticle.setAttribute("class", defaultPriorityClass);
+    if (priority == "archived") {
+        newNoteArticle.classList.add(markAsDoneClass);
+    } else {
+        newNoteArticle.classList.add(`${priority}`);
+    }
     newNoteArticle.setAttribute("data-tag", `${tags}`);
-    newNoteArticle.classList.add(`${priority}`);
 
     let newNoteHeader = document.createElement("header");
     newNoteHeader.setAttribute("class", "note__header");
@@ -86,7 +125,7 @@ function NoteConstructor(tags, content, priority, noteID, date) {
 
     let newNoteMenuDiv = document.createElement("div");
     newNoteMenuDiv.setAttribute("class", "note__menu-div");
-    newNoteMenuDiv.innerHTML = `<span class="note__menu-span"></span><span class="note__menu-span"></span><span class="note__menu-span"></span>`
+    newNoteMenuDiv.innerHTML = `<span class="note__menu-span"></span><span class="note__menu-span"></span><span class="note__menu-span"></span>`;
     newNoteFooter.appendChild(newNoteMenuDiv);
 
     return newNoteArticle
@@ -94,7 +133,7 @@ function NoteConstructor(tags, content, priority, noteID, date) {
 
 function clearForm() {
     addNoteTags.value = "";
-    addNoteContent.value = ""
+    addNoteContent.value = "";
     normalPriorityInput.checked = true;
 }
 
@@ -108,18 +147,24 @@ function removeNote(e) {
     removeElementFromArray(allOfNotes, note);
     refreshStatistics();
     note.remove();
+
+    localStorage.removeItem(`${note.id}note-id`);
+    localStorage.removeItem(`${note.id}note-date`);
+    localStorage.removeItem(`${note.id}note-priority`);
+    localStorage.removeItem(`${note.id}note-tags`);
+    localStorage.removeItem(`${note.id}note-content`);
 }
 
 function editNote(e) {
     let note = e.target.closest(`.${defaultPriorityClass}`);
-    let actualTitle = note.querySelector(".note__tags");
+    let actualTags = note.querySelector(".note__tags");
     let actualContent = note.querySelector(".note__content");
 
     let tempDiv = document.createElement("div");
-    tempDiv.innerHTML = `<input class="edit__text-input" id="editTags" type="text" name="editnotetitle" value="${actualTitle.textContent}">
+    tempDiv.innerHTML = `<input class="edit__text-input" id="editTags" type="text" name="editnotetitle" value="${actualTags.textContent}">
     <textarea class="edit__textarea" id="editContent" name="editnotecontent">${actualContent.textContent}</textarea>
     <input type="button" class="default-button" id="editNoteButton" value="Aktualizuj">
-    <input type="button" class="default-button" id="cancelEditNoteButton" value="Anuluj">`
+    <input type="button" class="default-button" id="cancelEditNoteButton" value="Anuluj">`;
     tempDiv.setAttribute("class", "note--edit-window");
     note.appendChild(tempDiv);
 
@@ -129,14 +174,20 @@ function editNote(e) {
     const noteContent = tempDiv.querySelector("#editContent");
 
     function edit() {
-        let tagsParagraph = actualTitle.textContent;
+        localStorage.removeItem(`${note.id}note-tags`);
+        localStorage.removeItem(`${note.id}note-content`);
+
+        let tagsParagraph = actualTags.textContent;
         let tagsArray = tagsParagraph.split(" ");
         removeNoteAllTags(allOfTags, tagsArray);
-        actualTitle.textContent = noteTags.value;
+        actualTags.textContent = noteTags.value;
         actualContent.textContent = noteContent.value;
         tagsArray = noteTags.value.split(" ");
         allOfTags = allOfTags.concat(tagsArray);
-        note.dataset.tag = actualTitle.textContent;
+        note.dataset.tag = actualTags.textContent;
+
+        localStorage.setItem(`${note.id}note-tags`, note.dataset.tag);
+        localStorage.setItem(`${note.id}note-content`, actualContent.textContent);
 
         tempDiv.remove();
         refreshStatistics();
@@ -144,6 +195,7 @@ function editNote(e) {
     function cancel() {
         tempDiv.remove();
     }
+
     editButton.addEventListener("click", edit);
     cancelButton.addEventListener("click", cancel);
 }
@@ -152,6 +204,7 @@ function changeNotePriority(e) {
     let note = e.target.closest(`.${defaultPriorityClass}`);
     let noteDataAttr = note.dataset;
     removeElementFromArray(allOfPriority, noteDataAttr.priority);
+    localStorage.removeItem(`${note.id}note-priority`);
 
     if (noteDataAttr.priority == defaultPriorityClass) {
         note.classList.add(lowPriorityClass);
@@ -167,6 +220,7 @@ function changeNotePriority(e) {
         noteDataAttr.priority = defaultPriorityClass;
     }
 
+    localStorage.setItem(`${note.id}note-priority`, noteDataAttr.priority);
     allOfPriority.push(noteDataAttr.priority);
     refreshStatistics();
 }
@@ -175,18 +229,20 @@ function markNoteAsDone(e) {
     let note = e.target.closest(`.${defaultPriorityClass}`);
     let noteDataAttr = note.dataset;
     removeElementFromArray(allOfPriority, noteDataAttr.priority);
+    localStorage.removeItem(`${note.id}note-priority`);
 
     if (noteDataAttr.priority != "archived") {
-        note.classList.add("note--markasdone");
+        note.classList.add(markAsDoneClass);
         noteDataAttr.priority = "archived";
         e.target.textContent = "Oznacz jako do zrobienia";
     } else if (noteDataAttr.priority == "archived") {
-        note.classList.remove("note--markasdone");
+        note.classList.remove(markAsDoneClass);
         noteDataAttr.priority = defaultPriorityClass;
         note.className = defaultPriorityClass;
         e.target.textContent = "Oznacz jako skończone";
     }
 
+    localStorage.setItem(`${note.id}note-priority`, noteDataAttr.priority);
     allOfPriority.push(noteDataAttr.priority);
     refreshStatistics();
 }
@@ -200,7 +256,7 @@ function showMenuNote(e) {
         if (document.querySelector(".note__menu-div--click")) {
             let noteFooter = document.querySelector(".note__menu-div--click");
             noteFooter.classList.remove("note__menu-div--click");
-        };
+        }
 
         if (document.querySelector(".note__menu-ul")) {
             let noteUL = document.querySelector(".note__menu-ul");
@@ -256,7 +312,7 @@ function actualDate() {
     let month = date.getMonth() + 1;
     let year = date.getFullYear();
     let hour = date.getHours();
-    let min = date.getMinutes()
+    let min = date.getMinutes();
     let minutes = (min > 9) ? min : "0" + min;
 
 
@@ -264,31 +320,31 @@ function actualDate() {
         case 0: {
             dayOfWeek = "Niedziela";
             break;
-        };
+        }
         case 1: {
             dayOfWeek = "Poniedziałek";
             break;
-        };
+        }
         case 2: {
             dayOfWeek = "Wtorek";
             break;
-        };
+        }
         case 3: {
             dayOfWeek = "Środa";
             break;
-        };
+        }
         case 4: {
             dayOfWeek = "Czwartek";
             break;
-        };
+        }
         case 5: {
             dayOfWeek = "Piątek";
             break;
-        };
+        }
         case 6: {
             dayOfWeek = "Sobota";
             break;
-        };
+        }
         default: {
             console.log("Błąd");
         }
@@ -322,7 +378,7 @@ function removeStatsList(domElement) {
 function removeElementFromArray(myArray, myElement) {
     tempVar = myArray.indexOf(myElement);
     if (tempVar > -1) {
-        myArray.splice(tempVar, 1)
+        myArray.splice(tempVar, 1);
     }
 }
 function removeNoteAllTags(mainArray, removeArray) {
@@ -344,7 +400,7 @@ function buildStatistics(array) {
             statisticsObject[attribute] = 1;
         }
     }
-    return statisticsObject;
+    return statisticsObject
 }
 function BuildStatsLi(elementAttribute, elementCount, domParent) {
     let newStatsDomElement = document.createElement("li");
@@ -352,7 +408,7 @@ function BuildStatsLi(elementAttribute, elementCount, domParent) {
     newStatsDomElement.setAttribute("data-tag", `${elementAttribute}`);
 
     if (elementAttribute == lowPriorityClass) {
-        elementAttribute = "Niski priorytet"
+        elementAttribute = "Niski priorytet";
     } else if (elementAttribute == highPriorityClass) {
         elementAttribute = "Wysoki priorytet";
     } else if (elementAttribute == defaultPriorityClass) {
@@ -371,7 +427,7 @@ function statsEvent() {
     if (tag == lowPriorityClass || tag == highPriorityClass || tag == defaultPriorityClass) {
         for (let i = 0; i < allOfNotes.length; i++) {
             let dataPriority = allOfNotes[i].dataset.priority;
-            allOfNotes[i].classList.remove("hideContent")
+            allOfNotes[i].classList.remove("hideContent");
             if (this.dataset.tag != dataPriority) {
                 allOfNotes[i].classList.add("hideContent");
                 if (dataPriority == "archived") {
@@ -422,5 +478,5 @@ function refreshSorting() {
 }
 
 addNoteButton.addEventListener("click", newNote);
-sectionNotes.addEventListener("click", showMenuNote)
-numbOfNotes.parentNode.addEventListener("click", refreshSorting)
+sectionNotes.addEventListener("click", showMenuNote);
+numbOfNotes.parentNode.addEventListener("click", refreshSorting);
