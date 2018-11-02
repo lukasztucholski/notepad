@@ -33,11 +33,11 @@ function newNote() {
         noteID++;
         let date = actualDate();
         let newNoteFromConstructor = new NoteConstructor(noteTagsValue, noteContentValue, priority, noteID, date);
-        // clearForm();
         sectionNotes.insertBefore(newNoteFromConstructor, sectionNotes.firstChild);
         allOfNotes.push(newNoteFromConstructor);
         allOfPriority.push(newNoteFromConstructor.dataset.priority);
         refreshStatistics();
+        clearForm();
     }
 }
 
@@ -94,9 +94,9 @@ function NoteConstructor(tags, content, priority, noteID, date) {
 }
 
 function clearForm() {
-    addNoteTags.value = "";
-    addNoteContent.value = ""
-    normalPriority.checked = true;
+    addNoteTags.value = "Tagi oddzielone spcją";
+    addNoteContent.value = "Treść notatki"
+    normalPriorityInput.checked = true;
 }
 
 function removeNote(e) {
