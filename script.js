@@ -41,11 +41,11 @@ function newNote() {
     }
 }
 
-function getPriority(lowPriority, highPriority) {
+function getPriority(low, high) {
     let priority;
-    if (lowPriority.checked == true) {
+    if (low.checked == true) {
         priority = lowPriorityClass;
-    } else if (highPriority.checked == true) {
+    } else if (high.checked == true) {
         priority = highPriorityClass;
     } else {
         priority = defaultPriorityClass;
@@ -94,8 +94,8 @@ function NoteConstructor(tags, content, priority, noteID, date) {
 }
 
 function clearForm() {
-    addNoteTags.value = "Tagi oddzielone spcją";
-    addNoteContent.value = "Treść notatki"
+    addNoteTags.value = "";
+    addNoteContent.value = ""
     normalPriorityInput.checked = true;
 }
 

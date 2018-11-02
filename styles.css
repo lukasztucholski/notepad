@@ -90,6 +90,8 @@ body {
 }
 .search__input {
   margin: 5px;
+  padding: 4px;
+  font-size: 10px;
 }
 
 
