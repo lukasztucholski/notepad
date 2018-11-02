@@ -36,6 +36,10 @@ function loadFromStorage(nr) {
     let date = localStorage.getItem(`${nr}note-date`);
     let priority = localStorage.getItem(`${nr}note-priority`);
     let tags = localStorage.getItem(`${nr}note-tags`);
+    if (tags) {
+        let tagsArray = tags.split(" "); 
+        allOfTags = allOfTags.concat(tagsArray);
+    }
     let notenumb = localStorage.getItem(`${nr}note-id`);
 
     if (content && date && priority && tags && notenumb) {
