@@ -23,7 +23,6 @@ let allOfPriority = [];
 
 (function () {
     let keys = Object.keys(localStorage);
-    console.log(keys.length);
     for (i = 1; i <= keys.length; i++) {
         loadFromStorage(i);
     }
@@ -314,7 +313,6 @@ function actualDate() {
     let hour = date.getHours();
     let min = date.getMinutes();
     let minutes = (min > 9) ? min : "0" + min;
-
 
     switch (dayOfWeek) {
         case 0: {
