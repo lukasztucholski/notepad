@@ -62,7 +62,6 @@ function NoteConstructor(tags, content, priority, noteID, date) {
     newNoteArticle.classList.add(`${priority}`);
 
     let newNoteHeader = document.createElement("header");
-    newNoteHeader.setAttribute("id", `${noteID}`);
     newNoteHeader.setAttribute("class", "note__header");
     newNoteArticle.appendChild(newNoteHeader);
 
