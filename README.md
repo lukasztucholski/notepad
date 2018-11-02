@@ -1,3 +1,3 @@
 # notepad
 
-first beta version of simple notepad, actually without localStorage and search engine.
+simple notepad, for now without search engine
