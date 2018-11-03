@@ -1,6 +1,7 @@
 const addNoteTags = document.querySelector(".form__text-input");
 const addNoteContent = document.querySelector(".form__textarea");
 const addNoteButton = document.querySelector(".form__button");
+const searchButton = document.querySelector(".search__button");
 const sectionNotes = document.querySelector(".notes-container");
 const tagsList = document.querySelector(".sidebar__tags-statistics");
 const notesList = document.querySelector(".sidebar__notes-statistics");
@@ -20,6 +21,7 @@ let noteID = 0;
 let allOfNotes = [];
 let allOfTags = [];
 let allOfPriority = [];
+let arrayWithNotesObjects = [];
 
 (function () {
     let keys = Object.keys(localStorage);
@@ -37,13 +39,21 @@ function loadFromStorage(nr) {
     let priority = localStorage.getItem(`${nr}note-priority`);
     let tags = localStorage.getItem(`${nr}note-tags`);
     if (tags) {
-        let tagsArray = tags.split(" "); 
+        let tagsArray = tags.split(" ");
         allOfTags = allOfTags.concat(tagsArray);
     }
     let notenumb = localStorage.getItem(`${nr}note-id`);
 
     if (content && date && priority && tags && notenumb) {
         let newNoteFromConstructor = new NoteConstructor(tags, content, priority, notenumb, date);
+        let newNoteObject = {
+            id: notenumb,
+            date: date,
+            tags: tags,
+            content: content,
+            priority: priority
+        };
+        arrayWithNotesObjects.push(newNoteObject);
         sectionNotes.insertBefore(newNoteFromConstructor, sectionNotes.firstChild);
         allOfNotes.push(newNoteFromConstructor);
         allOfPriority.push(newNoteFromConstructor.dataset.priority);
@@ -63,6 +73,14 @@ function newNote() {
         noteID++;
         let date = actualDate();
         let newNoteFromConstructor = new NoteConstructor(noteTagsValue, noteContentValue, priority, noteID, date);
+        let newNoteObject = {
+            id: noteID,
+            date: date,
+            tags: tags,
+            content: content,
+            priority: priority
+        }
+        arrayWithNotesObjects.push(newNoteObject);
         sectionNotes.insertBefore(newNoteFromConstructor, sectionNotes.firstChild);
         allOfNotes.push(newNoteFromConstructor);
         allOfPriority.push(newNoteFromConstructor.dataset.priority);
@@ -433,7 +451,7 @@ function statsEvent() {
             if (this.dataset.tag != dataPriority) {
                 allOfNotes[i].classList.add("hideContent");
                 if (dataPriority == "archived") {
-                    allOfNotes[i].classList.remove("showArchived");
+                    allOfNotes[i].classList.remove("showContent");
                     allOfNotes[i].classList.remove("hideContent");
                 }
             }
@@ -443,7 +461,7 @@ function statsEvent() {
             let dataPriority = allOfNotes[i].dataset.priority;
 
             if (dataPriority == "archived") {
-                allOfNotes[i].classList.add("showArchived");
+                allOfNotes[i].classList.add("showContent");
             }
             else {
                 allOfNotes[i].classList.add("hideContent");
@@ -458,7 +476,7 @@ function statsEvent() {
                 if (dataTags.indexOf(this.dataset.tag) == -1) {
                     allOfNotes[i].classList.add("hideContent");
                     if (dataPriority == "archived") {
-                        allOfNotes[i].classList.remove("showArchived");
+                        allOfNotes[i].classList.remove("showContent");
                         allOfNotes[i].classList.remove("hideContent");
                     }
                 }
@@ -474,11 +492,53 @@ function refreshSorting() {
     for (let i = 0; i < allOfNotes.length; i++) {
         allOfNotes[i].classList.remove("hideContent");
         if (allOfNotes[i].dataset.priority == "archived") {
-            allOfNotes[i].classList.remove("showArchived");
+            allOfNotes[i].classList.remove("showContent");
         }
     }
 }
 
+
+
+
+// S E A R C H I N G
+
+function searching() {
+    const searchTextInput = document.querySelector(".search__input");
+    let phrases = searchTextInput.value;
+    let phrasesArray = phrases.split(" ");
+    if (phrases.length > 2) {
+        const parentNodeOfResults = document.querySelector(".site-header");
+        const searchResultsDivs = document.createElement("div");
+        searchResultsDivs.className = "search-results";
+        searchResultsDivs.innerHTML = `<input type="button" class="default-button" id="cancelSearchResults" value="Zamknij wyniki wyszukiwania">`;
+        const cancelButton = searchResultsDivs.querySelector("#cancelSearchResults");
+        cancelButton.addEventListener("click", cancelSearch);
+        parentNodeOfResults.appendChild(searchResultsDivs);
+
+        for (i = 0; i < phrasesArray.length; i++) {
+            for (j = 0; j < arrayWithNotesObjects.length; j++) {
+                let note = arrayWithNotesObjects[j];
+                let phrase = phrasesArray[i];
+                if (note["content"].includes(phrase) || note["tags"].includes(phrase)) {
+                    if (note["priority"] != "archived") {
+                        let item = document.createElement("div");
+                        item.className = "search-result__content";
+                        item.innerHTML = `<p>${note["date"]}:</p>
+                    <p><a href="#${note["id"]}" class="search-result__link">${note["content"].substr(0, 200)}...</a></p>`;
+                        searchResultsDivs.insertBefore(item, searchResultsDivs.firstChild);
+                    }
+                }
+            }
+        }
+        function cancelSearch() {
+            searchResultsDivs.remove();
+        }
+    } else {
+        alert("Proszę wpisać tekst dłuższy niż dwa znaki aby wyszukać!");
+    }
+}
+
 addNoteButton.addEventListener("click", newNote);
+searchButton.addEventListener("click", searching);
 sectionNotes.addEventListener("click", showMenuNote);
 numbOfNotes.parentNode.addEventListener("click", refreshSorting);
