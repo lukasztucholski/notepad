@@ -77,7 +77,7 @@ function newNote() {
             id: noteID,
             date: date,
             tags: tags,
-            content: content,
+            content: noteContentValue, 
             priority: priority
         }
         arrayWithNotesObjects.push(newNoteObject);
