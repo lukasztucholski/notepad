@@ -76,7 +76,7 @@ function newNote() {
         let newNoteObject = {
             id: noteID,
             date: date,
-            tags: tags,
+            tags: noteTagsValue, 
             content: noteContentValue, 
             priority: priority
         }
